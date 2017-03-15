@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+	<title>打灰机</title>
+	<style type="text/css">
+		*{
+			margin: 0;
+			padding: 0;
+		}
+		html,body{
+			width: 100%;
+			height: 100%;
+			overflow: hidden;
+		}
+		#score{
+			position: absolute;
+			top: 0;
+			right: 0;
+		}
+	</style>
+</head>
+<body>
+	<!-- 1、布局 -->
+	<span id="score">分数：0</span>
+	<canvas id="canvas"></canvas>
+	<div id="music" style="display: none">
+		<audio id="game_music" src="audio/game_music.mp3"></audio>
+	</div>
+</body>
+<!-- 4.1 调用创建背景类 -->
+<script type="text/javascript" src="js/object.js"></script>
+<script type="text/javascript">
+	var canvas = document.getElementById("canvas");
+	var context = canvas.getContext("2d");
+	var span = document.getElementById("score");
+	var sum = 0;
+	
+	// ----------------------2、判断移动端-----------------------
+
+	// 2.2 调用
+	isMobileFn();
+	// 2.1 封装判断移动端
+	function isMobileFn(){
+		var userAgent = navigator.userAgent; 
+		var mobileArr = ["Android", "iPhone", "Windows Phone", "iPad", "iPod"];
+		// 遍历判断
+		// 判断移动端"Mobile"
+		if (userAgent.indexOf("Mobile") > 1) {
+			canvas.width = document.documentElement.clientWidth;
+			canvas.height = document.documentElement.clientHeight;
+			return false;
+		}
+		// 如果不是移动端
+		canvas.width = 320;
+		canvas.height = 568;
+	}
+
+	// -----------------3、加载图片资源-----------------------
+
+	// 3.1 创建图片路径数组
+	var imageArr = ["bg.png","bullet1.png","enemy1_blowup_1.png","enemy1_blowup_2.png","enemy1_blowup_3.png","enemy1_blowup_4.png","enemy1_fly_1.png","hero_blowup_1.png","hero_blowup_2.png","hero_blowup_3.png","hero_blowup_4.png","hero_fly_1.png","hero_fly_2.png"];
+
+	// 3.2 创建图片对象数组
+	// 主要用于给canvas绘制图像使用
+	var oArr = [];
+
+	// 3.3 加载图片
+	function loadingFn(arr,fn){
+		// 计算图片数量
+		var number = 0;
+		// 遍历
+		for (var i = 0; i < arr.length; i++) {
+			// 创建图片对象
+			var img = new Image();
+			// 设置路径
+			img.src = "images/" + arr[i];
+
+			// 保存图片对象
+			oArr.push(img);
+
+			// img.onload，当图片加载完后触发方法
+			img.onload = function(){
+				// 计算加载了多少张
+				number++;
+				//判断是否已经加载完毕
+				if(number == arr.length){
+					fn&&fn();
+				}
+			}
+		}
+	}
+
+	// -----------------4、绘制背景-----------------------
+
+	// 4.1 创建背景类
+	// 4.2 游戏开始的函数
+	function gameStartFn(){
+		// 创建对象
+		// 4.2 构建背景对象
+		var background = new Background();
+		// 5.2 构建飞机对象
+		var hero = new Hero();
+		// 6.2 构建子弹对象
+		var bullet = new Bullet();
+		// 7.2 构建敌机对象
+		var enemy = new Enemy();
+
+		animation();
+		function animation(){
+			// 4.2 绘制背景图
+			background.draw();
+			// 5.2 绘制英雄机
+			hero.draw();
+			// 6.2绘制子弹
+			// 8.2添加（enemy）
+			bullet.draw(hero,enemy);
+			// 7.2绘制子弹
+			enemy.draw();
+
+			window.requestAnimationFrame(animation);
+		}	
+
+		// 5.3 手势拖拽飞机
+		canvas.addEventListener("touchstart",function(e){
+
+			// 获取手势点击屏幕位置
+			var touchX = e.touches[0].clientX;
+			var touchY = e.touches[0].clientY;
+
+			// 计算手势点击位置与飞机的坐标的差值
+
+			differX = touchX - hero.x;
+			differY = touchY - hero.y;
+			
+			canvas.addEventListener("touchmove",function(e){
+				var touchX = e.touches[0].clientX;
+				var touchY = e.touches[0].clientY;
+
+				// 改变飞机位置
+				hero.x = touchX-differX;
+				hero.y = touchY-differY;
+
+			},false)
+		},false)
+
+	}
+
+	// 4.3 调用开始函数
+	loadingFn(imageArr,function(){
+		gameStartFn();
+	})
+
+	// ----------------5、绘制英雄机----------------------
+
+	// 5.1 js文件创建英雄机类
+	// 5.2 在函数gameStartFn里面构建飞机对象
+	// 5.3 在函数gameStartFn里面写手势拖拽飞机函数
+
+	// ----------------6. 绘制子弹-------------------------
+
+	// 6.1 js创建"子弹类"Bullet
+	// 6.2 在函数gameStartFn里面构建子弹对象
+
+	// ----------------7. 绘制敌机-------------------------
+
+	// 7.1 js创建"敌机类"Enemy
+	// 7.2 在函数gameStartFn里面构建敌机对象
+
+	// ----------------8. 消灭敌机-------------------------
+	// 8.1 在"子弹类"Bullet新增多一个方法
+	// 8.2 bullet.draw添加（enemy）
+
+</script>
+</html>
